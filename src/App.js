@@ -1,167 +1,193 @@
 /**
- * App — orchestrates all components
+ * App — orchestrates all components (calendar/event view)
  */
 
-import { Header } from "./components/Header.js";
-import { SearchBar } from "./components/SearchBar.js";
-import { NoteList } from "./components/NoteList.js";
+import { CalendarHeader } from "./components/CalendarHeader.js";
+import { WeekDaysBar } from "./components/WeekDaysBar.js";
+import { EventList } from "./components/EventList.js";
 import { Fab } from "./components/Fab.js";
-import { NoteEditor } from "./components/NoteEditor.js";
+import { EventEditor } from "./components/EventEditor.js";
 import {
-  createNote,
-  getAllNotes,
-  getNote,
-  updateNote,
-  deleteNote,
-  searchNotes,
-  getNotesPaginated,
+  createEvent,
+  updateEvent,
+  deleteEvent,
+  getEventsByDate,
+  getAllEvents,
 } from "./db.js";
 import "./components/style.css";
 
 const today = new Date();
-const dateStr = today.toISOString().split("T")[0];
+const todayStr = today.toISOString().split("T")[0];
 
 export default class App {
   constructor() {
-    this.notes = [];
-    this.selectedDate = null;
-    this.searchQuery = "";
-    this.currentNote = null;
-    this.saveTimer = null;
+    this.currentMonth = new Date(today);
+    this.selectedDate = todayStr;
+    this.currentEvent = null;
+    this.viewMode = "date"; // 'date' or 'all'
 
-    this.header = Header({
+    this.calendarHeader = CalendarHeader({
+      currentDate: this.currentMonth,
+      onMonthChange: (date) => this.onMonthChange(date),
+    });
+
+    this.weekDaysBar = WeekDaysBar({
+      currentDate: this.currentMonth,
       selectedDate: this.selectedDate,
-      onDateChange: (date) => this.onDateChange(date),
+      onDateSelect: (date) => this.onDateSelect(date),
+      onShowAll: () => this.onShowAll(),
     });
 
-    this.searchBar = SearchBar({
-      placeholder: "Buscar notas...",
-      onSearch: (query) => this.onSearch(query),
-    });
-
-    this.noteList = NoteList({
-      notes: this.notes,
-      onNoteClick: (id) => this.onNoteClick(id),
-      onTogglePin: (id) => this.onTogglePin(id),
-      onToggleArchive: (id) => this.onToggleArchive(id),
+    this.eventList = EventList({
+      events: [],
+      onEventClick: (event) => this.onEventClick(event),
+      onEventEdit: (event) => this.onEventEdit(event),
+      onEventDelete: (event) => this.onEventDelete(event),
     });
 
     this.fab = Fab({
       onClick: () => this.onFabClick(),
     });
 
-    this.editor = NoteEditor({
-      onSave: (data) => this.onSave(data, false),
+    this.editor = EventEditor({
+      onSave: (data, eventId) => this.onSave(data, eventId),
       onClose: () => this.onCloseEditor(),
       onDelete: (id) => this.onDelete(id),
     });
   }
 
   async mount(root) {
-    // Build layout
-    root.appendChild(this.header.element);
-    root.appendChild(this.searchBar.element);
-    root.appendChild(this.noteList.element);
+    root.appendChild(this.calendarHeader.element);
+    root.appendChild(this.weekDaysBar.element);
+    root.appendChild(this.eventList.element);
     root.appendChild(this.editor.element);
     root.appendChild(this.fab);
 
-    // Load initial data
-    await this.loadNotes();
+    await this.loadEventsForSelectedDate();
   }
 
-  async loadNotes() {
-    this.notes = await getAllNotes();
-    console.log("[App] loadNotes:", this.notes.length, "notas cargadas");
-    this.noteList.setNotes(this.notes);
-    this.noteList.render();
+  async loadEventsForSelectedDate() {
+    const events = await getEventsByDate(this.selectedDate);
+    this.eventList.setEvents(events);
+    this.eventList.render();
   }
 
-  onDateChange(date) {
-    this.selectedDate = date;
-    this.header.setDate(date);
-    this.applyFilters();
-  }
+  onMonthChange(date) {
+    this.currentMonth = date;
+    this.calendarHeader.updateDate(date);
 
-  onSearch(query) {
-    this.searchQuery = query;
-    this.searchBar.setInput(query);
-    this.applyFilters();
-  }
+    // Update week days bar
+    const weekDays = this.getWeekDays(date);
+    const todayStr = new Date().toISOString().split("T")[0];
 
-  async applyFilters() {
-    let notes;
+    // Check if today is in this week, if not default to Monday
+    const todayInWeek = weekDays.some(
+      (d) => d.toISOString().split("T")[0] === todayStr,
+    );
 
-    if (this.searchQuery) {
-      notes = await searchNotes(this.searchQuery);
+    if (todayInWeek) {
+      // Keep selected date if it's still in the new month's week
+      const selectedInWeek = weekDays.some(
+        (d) => d.toISOString().split("T")[0] === this.selectedDate,
+      );
+      if (!selectedInWeek) {
+        this.selectedDate = todayStr;
+      }
     } else {
-      notes = await getAllNotes();
+      this.selectedDate = weekDays[0].toISOString().split("T")[0];
     }
 
-    // Filter by date if selected
-    if (this.selectedDate) {
-      const start = new Date(this.selectedDate);
-      const end = new Date(this.selectedDate);
-      end.setHours(23, 59, 59, 999);
+    this.weekDaysBar.updateSelected(this.selectedDate);
+    this.loadEventsForSelectedDate();
+  }
 
-      notes = notes.filter((note) => {
-        const d = new Date(note.updatedAt);
-        return d >= start && d <= end;
-      });
+  onDateSelect(date) {
+    this.selectedDate = date;
+    this.viewMode = "date";
+    this.weekDaysBar.updateSelected(date);
+    this.weekDaysBar.updateAllBtn(false);
+    this.loadEventsForSelectedDate();
+  }
+
+  async onShowAll() {
+    if (this.viewMode === "all") {
+      // Switch back to today
+      this.viewMode = "date";
+      this.selectedDate = todayStr;
+      this.weekDaysBar.updateSelected(this.selectedDate);
+      this.weekDaysBar.updateAllBtn(false);
+      await this.loadEventsForSelectedDate();
+    } else {
+      this.viewMode = "all";
+      const events = await getAllEvents();
+      events.sort((a, b) => a.time.localeCompare(b.time));
+      this.eventList.setEvents(events);
+      this.eventList.render();
+      this.weekDaysBar.updateAllBtn(true);
     }
-
-    this.notes = notes;
-    this.noteList.render();
   }
 
-  async onFabClick() {
-    this.currentNote = await createNote();
-    this.editor.show(this.currentNote);
+  onEventClick(event) {
+    this.onEventEdit(event);
   }
 
-  async onNoteClick(id) {
-    const note = await getNote(id);
-    this.currentNote = note;
-    this.editor.show(note);
+  onEventEdit(event) {
+    this.currentEvent = event;
+    this.editor.show(event);
   }
 
-  async onTogglePin(id) {
-    const note = await getNote(id);
-    const newPinned = !note.isPinned;
-    await updateNote(id, { isPinned: newPinned });
-    await this.loadNotes();
+  async onEventDelete(event) {
+    await this.onDelete(event.id);
   }
 
-  async onToggleArchive(id) {
-    const note = await getNote(id);
-    const newArchived = !note.isArchived;
-    await updateNote(id, { isArchived: newArchived });
-    await this.loadNotes();
-  }
-
-  async onSave(data, isAutoSave = false) {
-    if (!this.currentNote) return;
-
-    await updateNote(this.currentNote.id, {
-      title: data.title,
-      content: data.content,
-      tags: data.tags,
-    });
-
-    if (!isAutoSave) {
-      this.editor.hide();
-      await this.loadNotes();
+  async onSave(data, eventId) {
+    if (eventId) {
+      await updateEvent(eventId, data);
+    } else {
+      await createEvent(data);
     }
+    this.editor.hide();
+    this.currentEvent = null;
+    await this.loadEventsForSelectedDate();
   }
 
   async onCloseEditor() {
     this.editor.hide();
-    this.currentNote = null;
+    this.currentEvent = null;
   }
 
   async onDelete(id) {
-    await deleteNote(id);
+    await deleteEvent(id);
     this.editor.hide();
-    this.currentNote = null;
-    await this.loadNotes();
+    this.currentEvent = null;
+    await this.loadEventsForSelectedDate();
+  }
+
+  onFabClick() {
+    const newEvent = {
+      title: "",
+      content: "",
+      category: "TRABAJO",
+      date: this.selectedDate,
+      time: "09:00",
+    };
+    this.currentEvent = newEvent;
+    this.editor.show(newEvent);
+  }
+
+  getWeekDays(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const monday = new Date(d);
+    monday.setDate(diff);
+
+    const weekDays = [];
+    for (let i = 0; i < 7; i++) {
+      const dayDate = new Date(monday);
+      dayDate.setDate(monday.getDate() + i);
+      weekDays.push(dayDate);
+    }
+    return weekDays;
   }
 }

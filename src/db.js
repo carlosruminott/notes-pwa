@@ -5,6 +5,7 @@ const db = new Dexie("NotasIA");
 // Schema
 db.version(1).stores({
   notes: "id, title, content, tags, createdAt, updatedAt, isPinned, isArchived",
+  events: "id, title, content, category, date, time, createdAt, updatedAt",
 });
 
 /**
@@ -168,3 +169,64 @@ export async function getNotesCount() {
 }
 
 export default db;
+
+// ===== Events CRUD =====
+
+export async function createEvent(data = {}) {
+  const now = Date.now();
+  const today = new Date().toISOString().split("T")[0];
+  const event = {
+    id: crypto.randomUUID(),
+    title: data.title || "",
+    content: data.content || "",
+    category: data.category || "TRABAJO",
+    date: data.date || today,
+    time: data.time || "09:00",
+    createdAt: now,
+    updatedAt: now,
+  };
+  await db.events.add(event);
+  return event;
+}
+
+export async function getAllEvents() {
+  return db.events.toArray();
+}
+
+export async function getEvent(id) {
+  return db.events.get(id);
+}
+
+export async function updateEvent(id, updates) {
+  await db.events.update(id, {
+    ...updates,
+    updatedAt: Date.now(),
+  });
+}
+
+export async function deleteEvent(id) {
+  await db.events.delete(id);
+}
+
+export async function getEventsByDate(date) {
+  return db.events.where("date").equals(date).sortBy("time");
+}
+
+export async function getEventsPaginated(limit = 20, lastId) {
+  if (lastId) {
+    return db.events.where("id").above(lastId).limit(limit).toArray();
+  }
+  return db.events.orderBy("date").limit(limit).toArray();
+}
+
+export async function getEventsCount() {
+  return db.events.count();
+}
+
+export async function clearAllEvents() {
+  await db.events.clear();
+}
+
+export async function deleteAllEvents() {
+  await db.events.clear();
+}
