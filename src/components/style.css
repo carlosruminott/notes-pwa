@@ -74,11 +74,37 @@ body {
 
 .calendar-header {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: 8px;
     padding: 16px 20px;
     background: var(--bg);
     border-bottom: 1px solid var(--border);
+}
+
+.calendar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.month-row {
+    /* primary, larger */
+}
+
+.week-row {
+    /* secondary, smaller */
+}
+
+.week-year-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
 }
 
 .nav-arrow {
@@ -110,6 +136,7 @@ body {
     font-size: 18px;
     font-weight: 600;
     color: var(--text-h);
+    text-align: center;
 }
 
 /* ===== Week Days Bar ===== */

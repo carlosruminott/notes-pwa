@@ -14,6 +14,7 @@ import {
   getEventsByDate,
   getAllEvents,
 } from "./db.js";
+import db from "./db.js";
 import "./components/style.css";
 
 const today = new Date();
@@ -29,6 +30,7 @@ export default class App {
     this.calendarHeader = CalendarHeader({
       currentDate: this.currentMonth,
       onMonthChange: (date) => this.onMonthChange(date),
+      onWeekChange: (date) => this.onWeekChange(date),
     });
 
     this.weekDaysBar = WeekDaysBar({
@@ -110,6 +112,64 @@ export default class App {
 
     this.weekDaysBar.updateSelected(this.selectedDate);
     this.loadEventsForSelectedDate();
+  }
+
+  onWeekChange(date) {
+    // Move the month pointer to the selected week
+    this.currentMonth = date;
+    this.calendarHeader.updateDate(date);
+
+    // Update week days bar to show the week containing this date
+    const weekDays = this.getWeekDays(date);
+    const todayStr = new Date().toISOString().split("T")[0];
+    const todayInWeek = weekDays.some(
+      (d) => d.toISOString().split("T")[0] === todayStr,
+    );
+
+    if (todayInWeek) {
+      const selectedInWeek = weekDays.some(
+        (d) => d.toISOString().split("T")[0] === this.selectedDate,
+      );
+      if (!selectedInWeek) {
+        this.selectedDate = todayStr;
+      }
+    } else {
+      this.selectedDate = weekDays[0].toISOString().split("T")[0];
+    }
+
+    this.weekDaysBar.updateWeek(date);
+    this.weekDaysBar.updateSelected(this.selectedDate);
+
+    // Load events for the entire week
+    this.loadEventsForWeek(weekDays);
+  }
+
+  async loadEventsForWeek(weekDays) {
+    this.viewMode = "date";
+    this.weekDaysBar.updateAllBtn(false);
+
+    // Collect all dates in the week
+    const weekDates = weekDays.map((d) => d.toISOString().split("T")[0]);
+
+    // Fetch events for each day in parallel
+    const promises = weekDates.map((dateStr) =>
+      db.events.where("date").equals(dateStr).sortBy("time"),
+    );
+    const results = await Promise.all(promises);
+
+    // Flatten and sort by date + time
+    let allEvents = [];
+    results.forEach((events) => {
+      allEvents = allEvents.concat(events);
+    });
+    allEvents.sort((a, b) => {
+      const dateCompare = a.date.localeCompare(b.date);
+      if (dateCompare !== 0) return dateCompare;
+      return a.time.localeCompare(b.time);
+    });
+
+    this.eventList.setEvents(allEvents);
+    this.eventList.render();
   }
 
   onDateSelect(date) {
