@@ -37,6 +37,7 @@ export default class App {
       onDateSelect: (date) => this.onDateSelect(date),
       onShowAll: () => this.onShowAll(),
     });
+    this.weekDaysBar.clearSelection();
 
     this.eventList = EventList({
       events: [],
@@ -63,7 +64,17 @@ export default class App {
     root.appendChild(this.editor.element);
     root.appendChild(this.fab);
 
-    await this.loadEventsForSelectedDate();
+    await this.loadAllEvents();
+  }
+
+  async loadAllEvents() {
+    this.viewMode = "all";
+    this.weekDaysBar.clearSelection();
+    const events = (await getAllEvents()).slice();
+    events.sort((a, b) => this.sortEventsByWeekDayTime(a, b));
+    this.eventList.setEvents(events);
+    this.eventList.render();
+    this.weekDaysBar.updateAllBtn(true);
   }
 
   async loadEventsForSelectedDate() {
@@ -119,12 +130,43 @@ export default class App {
       await this.loadEventsForSelectedDate();
     } else {
       this.viewMode = "all";
-      const events = await getAllEvents();
-      events.sort((a, b) => a.time.localeCompare(b.time));
+      this.weekDaysBar.clearSelection();
+      const events = (await getAllEvents()).slice();
+      events.sort((a, b) => this.sortEventsByWeekDayTime(a, b));
       this.eventList.setEvents(events);
       this.eventList.render();
       this.weekDaysBar.updateAllBtn(true);
     }
+  }
+
+  sortEventsByWeekDayTime(a, b) {
+    const dateA = new Date(a.date + "T00:00:00");
+    const dateB = new Date(b.date + "T00:00:00");
+
+    // 1. Ordenar por semana ISO (año + número de semana)
+    const weekA = this.getISOWeek(dateA);
+    const weekB = this.getISOWeek(dateB);
+    if (weekA !== weekB) {
+      return weekA - weekB;
+    }
+
+    // 2. Ordenar por día de la semana (Lunes=0 → Domingo=6)
+    const dayA = (dateA.getDay() + 6) % 7;
+    const dayB = (dateB.getDay() + 6) % 7;
+    if (dayA !== dayB) {
+      return dayA - dayB;
+    }
+
+    // 3. Ordenar por horario
+    return a.time.localeCompare(b.time);
+  }
+
+  getISOWeek(date) {
+    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return `${d.getUTCFullYear()}W${Math.ceil(((d - yearStart) / 86400000 + 1) / 7)}`;
   }
 
   onEventClick(event) {

@@ -39,7 +39,7 @@ export function WeekDaysBar({
   // "Todos" button
   const allBtn = document.createElement("button");
   allBtn.className = "week-days-all-btn";
-  allBtn.textContent = "Todos";
+  allBtn.textContent = "T";
   allBtn.addEventListener("click", () => {
     if (onShowAll) onShowAll();
   });
@@ -88,6 +88,9 @@ export function WeekDaysBar({
       if (btn) {
         btn.classList.toggle("active", active);
       }
+    },
+    clearSelection() {
+      dayElements.forEach((el) => el.classList.remove("selected"));
     },
   };
 }
