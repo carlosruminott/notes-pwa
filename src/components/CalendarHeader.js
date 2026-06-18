@@ -3,8 +3,18 @@
  */
 
 const MONTHS = [
-  "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-  "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
+  "Enero",
+  "Febrero",
+  "Marzo",
+  "Abril",
+  "Mayo",
+  "Junio",
+  "Julio",
+  "Agosto",
+  "Septiembre",
+  "Octubre",
+  "Noviembre",
+  "Diciembre",
 ];
 
 /**
@@ -109,7 +119,7 @@ export function CalendarHeader({ currentDate, onMonthChange, onWeekChange }) {
   weekRow.appendChild(weekLabel);
   weekRow.appendChild(weekRightArrow);
 
-  container.appendChild(monthRow);
+  //container.appendChild(monthRow);
   container.appendChild(weekRow);
 
   return {
