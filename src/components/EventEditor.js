@@ -86,12 +86,20 @@ export function EventEditor({ onSave, onClose, onDelete }) {
 
   function populate(e) {
     currentEvent = e;
+    const isNew = !e?.id;
     titleInput.value = e?.title ?? "";
     dateInput.value = e?.date ?? new Date().toISOString().split("T")[0];
-    timeInput.value = e?.time ?? "09:00";
+    timeInput.value = e?.time ?? (isNew ? getCurrentTime() : "09:00");
     contentArea.value = e?.content ?? "";
     selectedCategory = e?.category ?? "TRABAJO";
     updateCategoryUI();
+  }
+
+  function getCurrentTime() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, "0");
+    const m = String(now.getMinutes()).padStart(2, "0");
+    return `${h}:${m}`;
   }
 
   function updateCategoryUI() {

@@ -249,7 +249,6 @@ export default class App {
       content: "",
       category: "TRABAJO",
       date: this.selectedDate,
-      time: "09:00",
     };
     this.currentEvent = newEvent;
     this.editor.show(newEvent);
