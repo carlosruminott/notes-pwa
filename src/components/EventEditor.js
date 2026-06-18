@@ -12,34 +12,50 @@ export function EventEditor({ onSave, onClose, onDelete }) {
   const editor = document.createElement("div");
   editor.className = "event-editor";
 
-  // Toolbar
+  // === Toolbar: ✕ (izq) + Eliminar (der) ===
   const toolbar = document.createElement("div");
   toolbar.className = "event-editor-toolbar";
-
-  const saveBtn = document.createElement("button");
-  saveBtn.className = "btn-save";
-  saveBtn.textContent = "Guardar";
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "btn-close";
   closeBtn.textContent = "✕";
 
-  toolbar.appendChild(saveBtn);
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "btn-delete";
+  deleteBtn.textContent = "🗑️ Eliminar";
+
+  toolbar.appendChild(deleteBtn);
   toolbar.appendChild(closeBtn);
 
-  // Title
+  // === Title ===
   const titleInput = document.createElement("input");
   titleInput.className = "event-editor-title";
   titleInput.type = "text";
   titleInput.placeholder = "Título del evento";
 
-  // Category selector
+  // === Description textarea ===
+  const contentArea = document.createElement("textarea");
+  contentArea.className = "event-editor-content";
+  contentArea.placeholder = "Descripción...";
+
+  // === Date + Time (2 columns) ===
+  const dateTimeRow = document.createElement("div");
+  dateTimeRow.className = "event-editor-datetime-row";
+
+  const dateInput = document.createElement("input");
+  dateInput.className = "event-editor-date";
+  dateInput.type = "date";
+
+  const timeInput = document.createElement("input");
+  timeInput.className = "event-editor-time";
+  timeInput.type = "time";
+
+  dateTimeRow.appendChild(dateInput);
+  dateTimeRow.appendChild(timeInput);
+
+  // === Category selector ===
   const categoryWrapper = document.createElement("div");
   categoryWrapper.className = "category-selector";
-
-  const categoryLabel = document.createElement("span");
-  categoryLabel.className = "category-label";
-  categoryLabel.textContent = "Categoría:";
 
   const categoryButtons = [];
   CATEGORIES.forEach((cat) => {
@@ -51,39 +67,18 @@ export function EventEditor({ onSave, onClose, onDelete }) {
     categoryWrapper.appendChild(btn);
   });
 
-  categoryWrapper.appendChild(categoryLabel);
+  // === Save button (bottom) ===
+  const saveBtn = document.createElement("button");
+  saveBtn.className = "btn-save";
+  saveBtn.textContent = "Guardar";
 
-  // Date input
-  const dateInput = document.createElement("input");
-  dateInput.className = "event-editor-date";
-  dateInput.type = "date";
-
-  // Time input
-  const timeInput = document.createElement("input");
-  timeInput.className = "event-editor-time";
-  timeInput.type = "time";
-
-  // Content
-  const contentArea = document.createElement("textarea");
-  contentArea.className = "event-editor-content";
-  contentArea.placeholder = "Descripción...";
-
-  // Footer
-  const footer = document.createElement("div");
-  footer.className = "event-editor-footer";
-
-  const deleteBtn = document.createElement("button");
-  deleteBtn.className = "btn-delete";
-  deleteBtn.textContent = "🗑️ Eliminar";
-  footer.appendChild(deleteBtn);
-
+  // === Build ===
   editor.appendChild(toolbar);
   editor.appendChild(titleInput);
-  editor.appendChild(categoryWrapper);
-  editor.appendChild(dateInput);
-  editor.appendChild(timeInput);
   editor.appendChild(contentArea);
-  editor.appendChild(footer);
+  editor.appendChild(dateTimeRow);
+  editor.appendChild(categoryWrapper);
+  editor.appendChild(saveBtn);
   overlay.appendChild(editor);
 
   let currentEvent = null;
