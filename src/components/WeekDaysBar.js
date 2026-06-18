@@ -2,7 +2,7 @@
  * WeekDaysBar — horizontal strip of 7 days for the current week
  */
 
-const DAYS_SHORT = ["D", "L", "M", "Mi", "J", "V", "S"];
+const DAYS_SHORT = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
 
 function getWeekDays(date) {
   const d = new Date(date);

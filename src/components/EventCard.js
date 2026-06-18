@@ -22,7 +22,7 @@ function formatTime(time) {
 function formatDayInfo(dateStr) {
   if (!dateStr) return { dayName: "", dayNum: "" };
   const date = new Date(dateStr + "T00:00:00");
-  const dayNames = ["D", "L", "M", "Mi", "J", "V", "S"];
+  const dayNames = ["Dom", "Lun", "Mar", "Mie", "Jue", "Vie", "Sab"];
   const dayName = dayNames[date.getDay()];
   const dayNum = date.getDate();
   return { dayName, dayNum };
