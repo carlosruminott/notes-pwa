@@ -370,7 +370,7 @@ body {
     height: 56px;
     border-radius: 16px;
     border: 1px solid var(--border);
-    background: var(--bg);
+    background: #1d1e25;
     color: var(--text-h);
     font-size: 28px;
     font-weight: 700;
