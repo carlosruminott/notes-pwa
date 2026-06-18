@@ -38,6 +38,7 @@ export default class App {
       selectedDate: this.selectedDate,
       onDateSelect: (date) => this.onDateSelect(date),
       onShowAll: () => this.onShowAll(),
+      onHasEvents: () => this.getEventDatesForWeek(),
     });
     this.weekDaysBar.clearSelection();
 
@@ -268,5 +269,14 @@ export default class App {
       weekDays.push(dayDate);
     }
     return weekDays;
+  }
+
+  async getEventDatesForWeek() {
+    const weekDays = this.getWeekDays(this.currentMonth);
+    const weekDates = weekDays.map((d) => d.toISOString().split("T")[0]);
+    const events = await db.events.toArray();
+    return events
+      .filter((e) => weekDates.includes(e.date))
+      .map((e) => e.date);
   }
 }

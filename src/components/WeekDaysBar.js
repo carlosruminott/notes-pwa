@@ -26,6 +26,7 @@ export function WeekDaysBar({
   selectedDate,
   onDateSelect,
   onShowAll,
+  onHasEvents,
 }) {
   const container = document.createElement("div");
   container.className = "week-days-bar";
@@ -35,8 +36,18 @@ export function WeekDaysBar({
 
   let currentWeekDate = new Date(currentDate);
   let dayElements = [];
+  let eventDates = new Set();
 
-  function renderWeek(date) {
+  async function loadEventDates() {
+    eventDates.clear();
+    if (onHasEvents) {
+      const dates = await onHasEvents();
+      console.log("[WeekDaysBar] eventDates:", dates);
+      dates.forEach((d) => eventDates.add(d));
+    }
+  }
+
+  async function renderWeek(date) {
     currentWeekDate = new Date(date);
     const weekDays = getWeekDays(currentWeekDate);
 
@@ -44,6 +55,8 @@ export function WeekDaysBar({
     const allBtn = container.querySelector(".week-days-all-btn");
     dayElements.forEach((el) => el.remove());
     dayElements = [];
+
+    await loadEventDates();
 
     weekDays.forEach((dayDate) => {
       const dayEl = document.createElement("div");
@@ -54,6 +67,8 @@ export function WeekDaysBar({
       const dateStr = dayDate.toISOString().split("T")[0];
       const isToday = dayDate.getTime() === today.getTime();
       const isSelected = selectedDate === dateStr;
+      const hasEvents = eventDates.has(dateStr);
+      if (hasEvents) console.log("[WeekDaysBar] has events:", dateStr);
 
       if (isToday) dayEl.classList.add("today");
       if (isSelected) dayEl.classList.add("selected");
@@ -61,6 +76,7 @@ export function WeekDaysBar({
       dayEl.innerHTML = `
         <span class="day-name">${dayName}</span>
         <span class="day-num">${dayNum}</span>
+        <span class="event-dot ${hasEvents ? "has-events" : ""}"></span>
       `;
 
       dayEl.addEventListener("click", () => {
@@ -82,7 +98,7 @@ export function WeekDaysBar({
   container.appendChild(allBtn);
 
   // Initial render
-  renderWeek(currentWeekDate);
+  renderWeek(currentWeekDate).catch(console.error);
 
   return {
     element: container,
