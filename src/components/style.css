@@ -325,21 +325,24 @@ body {
 }
 
 .event-card-day {
-    font-size: 13px;
+    font-size: 11px;
     font-weight: 600;
-    color: var(--text-h);
-    margin-bottom: 2px;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
 }
 
 .event-card-time-value {
-    font-size: 14px;
+    font-size: 9px;
     font-weight: 600;
-    color: var(--text-h);
+    color: var(--text);
+    line-height: 1;
 }
 
 .event-card-content {
     flex: 1;
     min-width: 0;
+    line-height: 1;
 }
 
 .event-card-category {
