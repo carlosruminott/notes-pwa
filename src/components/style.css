@@ -431,9 +431,8 @@ body {
     flex-direction: column;
     width: 100%;
     max-width: 640px;
-    max-height: 100svh;
+    height: 100svh;
     background: var(--bg);
-    overflow-y: auto;
 }
 
 @media (min-width: 640px) {
@@ -584,6 +583,7 @@ body {
 }
 
 .event-editor-content {
+    flex: 1;
     width: 100%;
     border: none;
     border-bottom: 1px solid var(--border);
