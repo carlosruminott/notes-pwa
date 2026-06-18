@@ -73,7 +73,7 @@ export default class App {
     this.viewMode = "all";
     this.weekDaysBar.clearSelection();
     const events = (await getAllEvents()).slice();
-    events.sort((a, b) => this.sortEventsByWeekDayTime(a, b));
+    events.sort((a, b) => this.sortEventsByDate(a, b));
     this.eventList.setEvents(events);
     this.eventList.render();
     this.weekDaysBar.updateAllBtn(true);
@@ -192,41 +192,19 @@ export default class App {
       this.viewMode = "all";
       this.weekDaysBar.clearSelection();
       const events = (await getAllEvents()).slice();
-      events.sort((a, b) => this.sortEventsByWeekDayTime(a, b));
+      events.sort((a, b) => this.sortEventsByDate(a, b));
       this.eventList.setEvents(events);
       this.eventList.render();
       this.weekDaysBar.updateAllBtn(true);
     }
   }
 
-  sortEventsByWeekDayTime(a, b) {
-    const dateA = new Date(a.date + "T00:00:00");
-    const dateB = new Date(b.date + "T00:00:00");
-
-    // 1. Ordenar por semana ISO (año + número de semana)
-    const weekA = this.getISOWeek(dateA);
-    const weekB = this.getISOWeek(dateB);
-    if (weekA !== weekB) {
-      return weekA - weekB;
-    }
-
-    // 2. Ordenar por día de la semana (Lunes=0 → Domingo=6)
-    const dayA = (dateA.getDay() + 6) % 7;
-    const dayB = (dateB.getDay() + 6) % 7;
-    if (dayA !== dayB) {
-      return dayA - dayB;
-    }
-
-    // 3. Ordenar por horario
+  sortEventsByDate(a, b) {
+    // 1. Ordenar por fecha cronológica
+    const dateCompare = a.date.localeCompare(b.date);
+    if (dateCompare !== 0) return dateCompare;
+    // 2. Ordenar por horario
     return a.time.localeCompare(b.time);
-  }
-
-  getISOWeek(date) {
-    const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    const dayNum = d.getUTCDay() || 7;
-    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return `${d.getUTCFullYear()}W${Math.ceil(((d - yearStart) / 86400000 + 1) / 7)}`;
   }
 
   onEventClick(event) {
