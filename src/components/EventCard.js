@@ -39,9 +39,9 @@ export function EventCard({ event, onClick, onEdit, onDelete }) {
     <div class="event-card-time">
       <span class="event-card-day">${dayName} ${dayNum}</span>
       <span class="event-card-time-value">${formatTime(event.time)}</span>
+      <div class="event-card-category" style="background:${colors.bg};color:${colors.text};border-color:${colors.border}">${event.category}</div>
     </div>
     <div class="event-card-content">
-      <div class="event-card-category" style="background:${colors.bg};color:${colors.text};border-color:${colors.border}">${event.category}</div>
       <div class="event-card-title">${event.title || "Sin título"}</div>
       ${event.content ? `<div class="event-card-preview">${event.content}</div>` : ""}
     </div>
