@@ -44,7 +44,7 @@ export function EventCard({ event, onClick, onEdit, onDelete }) {
       </div>
     </div>
     <div class="event-card-content">
-      <div class="event-card-title">${event.title || "Sin título"}</div>
+      <div class="event-card-title">${event.title || ""}</div>
       ${event.content ? `<div class="event-card-preview">${event.content}</div>` : ""}
     </div>
   `;
