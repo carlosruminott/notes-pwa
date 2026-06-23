@@ -3,11 +3,11 @@
  */
 
 const CATEGORY_COLORS = {
-  TRABAJO: { bg: "#fef3c7", text: "#92400e", border: "#fde68a" },
-  PERSONAL: { bg: "#dbeafe", text: "#1e40af", border: "#bfdbfe" },
-  SALUD: { bg: "#d1fae5", text: "#065f46", border: "#a7f3d0" },
-  ESTUDIO: { bg: "#ede9fe", text: "#5b21b6", border: "#ddd6fe" },
-  OTRO: { bg: "#f3f4f6", text: "#374151", border: "#e5e7eb" },
+  TRABAJO: { bg: "#854d0e33", text: "#fbbf24", border: "#a16207" },
+  PERSONAL: { bg: "#1e40af33", text: "#60a5fa", border: "#3b82f6" },
+  SALUD:   { bg: "#065f4633", text: "#34d399", border: "#10b981" },
+  ESTUDIO: { bg: "#5b21b633", text: "#a78bfa", border: "#8b5cf6" },
+  OTRO:    { bg: "#37415133", text: "#9ca3af", border: "#4b5563" },
 };
 
 function formatTime(time) {
