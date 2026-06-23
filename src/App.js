@@ -229,7 +229,7 @@ export default class App {
     }
     this.editor.hide();
     this.currentEvent = null;
-    await this.loadEventsForSelectedDate();
+    await this.loadAllEvents();
   }
 
   async onCloseEditor() {
@@ -241,7 +241,7 @@ export default class App {
     await deleteEvent(id);
     this.editor.hide();
     this.currentEvent = null;
-    await this.loadEventsForSelectedDate();
+    await this.loadAllEvents();
   }
 
   onFabClick() {
